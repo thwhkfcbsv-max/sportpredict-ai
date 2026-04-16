@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: sportpredict-ai
+    runtime: python
+    buildCommand: echo "No build needed"
+    startCommand: python3 server.py
+    envVars:
+      - key: FOOTBALL_API_KEY
+        sync: false
+      - key: MMA_API_KEY
+        sync: false
+      - key: ODDS_API_KEY
+        sync: false
