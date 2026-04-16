@@ -4,6 +4,8 @@ import math
 import urllib.request
 import os
 import sys
+import threading
+import time
 
 API_KEY = os.environ.get("FOOTBALL_API_KEY", "")
 MMA_API_KEY = os.environ.get("MMA_API_KEY", "")
@@ -490,6 +492,12 @@ class ReusableHTTPServer(HTTPServer):
 
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
+        if self.path == "/health":
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"ok")
+            return
         routes = {
             "/api/predictions": get_predictions,
             "/api/backtest": get_backtest,
@@ -528,6 +536,41 @@ if __name__ == "__main__":
 
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     port = int(os.environ.get("PORT", 8080))
+
+    # Pré-charger les caches au démarrage pour éviter la lenteur au 1er accès
+    def preload():
+        print("Pre-loading caches...")
+        try:
+            get_predictions()
+            print("  Football cache loaded")
+        except Exception as e:
+            print(f"  Football cache failed: {e}")
+        try:
+            get_mma_predictions()
+            print("  MMA cache loaded")
+        except Exception as e:
+            print(f"  MMA cache failed: {e}")
+        try:
+            get_boxing_predictions()
+            print("  Boxing cache loaded")
+        except Exception as e:
+            print(f"  Boxing cache failed: {e}")
+        print("Caches ready!")
+
+    threading.Thread(target=preload, daemon=True).start()
+
+    # Keep-alive : ping /health toutes les 14 min pour éviter le cold start Render
+    def keep_alive():
+        time.sleep(60)
+        while True:
+            try:
+                urllib.request.urlopen(f"http://localhost:{port}/health", timeout=5)
+            except Exception:
+                pass
+            time.sleep(840)
+
+    threading.Thread(target=keep_alive, daemon=True).start()
+
     server = ReusableHTTPServer(("0.0.0.0", port), Handler)
     print(f"SportPredict AI running on http://0.0.0.0:{port}")
     server.serve_forever()
