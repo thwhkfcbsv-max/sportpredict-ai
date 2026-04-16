@@ -438,7 +438,7 @@ function renderCurrentSport() {
 // ═══════════════ FOOTBALL ═══════════════
 async function loadPredictions() {
   try {
-    const resp = await fetch('/api/predictions');
+    const resp = await fetch('data/football.json');
     if (!resp.ok) throw new Error(`API error: ${resp.status}`);
     allPredictions = await resp.json();
     if (allPredictions.error) throw new Error(allPredictions.error);
@@ -558,7 +558,7 @@ function renderPredictions() {
 async function loadMMA() {
   document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div><div class="loading-text">Loading MMA fights...</div></div>';
   try {
-    const resp = await fetch('/api/mma/predictions');
+    const resp = await fetch('data/mma.json');
     if (!resp.ok) throw new Error(`API error: ${resp.status}`);
     const data = await resp.json();
     if (data.error) throw new Error(data.error);
@@ -687,7 +687,7 @@ function renderMMA() {
 async function loadBoxing() {
   document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div><div class="loading-text">Loading boxing fights...</div></div>';
   try {
-    const resp = await fetch('/api/boxing/predictions');
+    const resp = await fetch('data/boxing.json');
     if (!resp.ok) throw new Error(`API error: ${resp.status}`);
     const data = await resp.json();
     if (data.error) throw new Error(data.error);
@@ -763,7 +763,7 @@ function renderBoxing() {
 // ═══════════════ BACKTEST ═══════════════
 async function loadBacktest() {
   try {
-    const resp = await fetch('/api/backtest');
+    const resp = await fetch('data/football.json');
     if (!resp.ok) throw new Error(`${resp.status}`);
     const bt = await resp.json();
     if (bt.error) throw new Error(bt.error);
